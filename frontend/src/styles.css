@@ -84,13 +84,13 @@ body {
   cursor: pointer;
 }
 
-/* Small hitbox so only the visible logo triggers back-nav; rest of page clicks pass through */
+/* Proportional hitbox over visible logo for back-nav; sized to match logo */
 .mini-logo-hitbox {
   position: absolute;
   top: 4rem;
   left: 13rem;
-  width: 120px;
-  height: 56px;
+  width: 200px;
+  height: 95px;
   z-index: 1;
   pointer-events: auto;
 }

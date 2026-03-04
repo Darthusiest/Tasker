@@ -198,16 +198,22 @@ def create_app():
 
         return jsonify(format_task(row)), 200
 
-    @app.patch("/tasks/<int:task_id>/complete") #complete task route
+    @app.patch("/tasks/<int:task_id>/complete")  # complete task route (toggle on/off)
     def complete_task(task_id):
         user_id = session.get("user_id")
         if not user_id:
             return jsonify({"error": "Unauthorized"}), 401
-        
+
+        data = request.get_json(silent=True) or {}
+        completed = data.get("completed")
+        if completed is None:
+            completed = True  # default: mark complete
+        completed = 1 if completed else 0
+
         db = get_db()
         cur = db.execute(
-            "UPDATE Tasks SET completed = 1 WHERE id = ? AND user_id = ?",
-            (task_id, user_id),
+            "UPDATE Tasks SET completed = ? WHERE id = ? AND user_id = ?",
+            (completed, task_id, user_id),
         )
         db.commit()
 

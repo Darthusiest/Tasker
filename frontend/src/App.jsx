@@ -565,15 +565,18 @@ export default function App() {
               }}
               onComplete={(item) => {
                 if (!item) return;
+                const nextCompleted = !item.completed;
 
                 if (!isLoggedIn) {
                   setTasks(prev =>
                     prev.map(task =>
-                      task.id === item.id ? { ...task, completed: !task.completed } : task
+                      task.id === item.id ? { ...task, completed: nextCompleted } : task
                     )
                   );
-                  setCelebratingTaskId(item.id);
-                  setTimeout(() => setCelebratingTaskId(null), 1500);
+                  if (nextCompleted) {
+                    setCelebratingTaskId(item.id);
+                    setTimeout(() => setCelebratingTaskId(null), 1500);
+                  }
                   return;
                 }
 
@@ -581,19 +584,23 @@ export default function App() {
                   try {
                     const res = await fetch(`${API_BASE}/tasks/${item.id}/complete`, {
                       method: 'PATCH',
-                      credentials: 'include'
+                      headers: { 'Content-Type': 'application/json' },
+                      credentials: 'include',
+                      body: JSON.stringify({ completed: nextCompleted })
                     });
                     if (!res.ok) {
                       // eslint-disable-next-line no-alert
-                      alert('Failed to complete task');
+                      alert('Failed to update task');
                       return;
                     }
                     const updated = await res.json();
                     setTasks(prev =>
                       prev.map(task => (task.id === updated.id ? updated : task))
                     );
-                    setCelebratingTaskId(item.id);
-                    setTimeout(() => setCelebratingTaskId(null), 1500);
+                    if (nextCompleted) {
+                      setCelebratingTaskId(item.id);
+                      setTimeout(() => setCelebratingTaskId(null), 1500);
+                    }
                   } catch (err) {
                     // eslint-disable-next-line no-console
                     console.error('Error completing task', err);
