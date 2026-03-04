@@ -3,7 +3,7 @@ import ASCIIText from './components/ASCIIText.jsx';
 import Dither from './components/Dither.jsx';
 import AnimatedList from './components/AnimatedList.jsx';
 
-const API_BASE = 'http://localhost:5050';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5050';
 
 function SplashScreen({ onEnter, onLoginClick, onLogoutClick, isLoggedIn }) {
   return (
@@ -510,7 +510,6 @@ export default function App() {
               })();
             }}
           />
-        )
       ) : (
         <div className="app-shell interior">
           <div className="interior-login">

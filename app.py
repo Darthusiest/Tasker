@@ -1,25 +1,28 @@
 # server routes (GET/POST/etc) + connects to DB
 
+import os
 from flask import Flask, request, jsonify, g, session
 from flask_cors import CORS
 import sqlite3
 from pathlib import Path
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlite3 import IntegrityError
-from flask_cors import CORS
 
-BASE_DIR = Path(__file__).resolve().parent 
+BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "data" / "database.db"
+DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 def create_app():
-    #create app
-    app = Flask(__name__) 
-    app.secret_key = "change_me_later" #temp for now
+    app = Flask(__name__)
+    app.secret_key = os.environ.get("SECRET_KEY", "change_me_later")
 
-    # allow frontend on 5173 to talk to this API with cookies
+    # CORS: allow frontend (local dev or Render static site URL)
+    origins = ["http://localhost:5173"]
+    if os.environ.get("FRONTEND_URL"):
+        origins.append(os.environ.get("FRONTEND_URL").rstrip("/"))
     CORS(
         app,
-        resources={r"/*": {"origins": "http://localhost:5173"}},
+        resources={r"/*": {"origins": origins}},
         supports_credentials=True,
     )
 
@@ -245,6 +248,7 @@ def create_app():
     return app
 
 
+app = create_app()
+
 if __name__ == "__main__":
-    app = create_app()
     app.run(debug=True, port=5050)

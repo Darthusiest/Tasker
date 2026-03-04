@@ -1,0 +1,30 @@
+# Render Blueprint: Tasker API (backend) + Tasker (frontend)
+# After first deploy: set FRONTEND_URL on the API to your static site URL,
+# and VITE_API_URL on the static site to your API URL.
+
+services:
+  # Flask API (Web Service)
+  - type: web
+    runtime: python
+    name: tasker-api
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    healthCheckPath: /health
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false
+        # After deploy: set to your static site URL, e.g. https://tasker-xxxx.onrender.com
+
+  # React frontend (Static Site)
+  - type: web
+    runtime: static
+    name: tasker
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+        # After deploy: set to your API URL, e.g. https://tasker-api-xxxx.onrender.com
