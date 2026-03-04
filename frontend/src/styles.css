@@ -80,8 +80,19 @@ body {
   width: 720px;
   height: 220px;
   z-index: 2;
-  pointer-events: auto;
+  pointer-events: none;
   cursor: pointer;
+}
+
+/* Small hitbox so only the visible logo triggers back-nav; rest of page clicks pass through */
+.mini-logo-hitbox {
+  position: absolute;
+  top: 4rem;
+  left: 13rem;
+  width: 120px;
+  height: 56px;
+  z-index: 1;
+  pointer-events: auto;
 }
 
 .task-search-bar {

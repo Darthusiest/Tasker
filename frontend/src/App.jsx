@@ -423,7 +423,8 @@ export default function App() {
         )
       ) : (
         <div className="app-shell interior">
-          <div className="mini-logo" onClick={handleLogoClick}>
+          <div className="mini-logo">
+            <span className="mini-logo-hitbox" onClick={handleLogoClick} aria-hidden />
             <ASCIIText text="Tasker" enableWaves asciiFontSize={4} textFontSize={230} planeBaseHeight={7} />
           </div>
           <div className="dither-bg">
