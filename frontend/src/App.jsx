@@ -256,6 +256,13 @@ export default function App() {
   const [newTaskStart, setNewTaskStart] = useState('');
   const [newTaskEnd, setNewTaskEnd] = useState('');
   const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [editingTask, setEditingTask] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editStart, setEditStart] = useState('');
+  const [editEnd, setEditEnd] = useState('');
+  const [taskToDelete, setTaskToDelete] = useState(null);
+  const [celebratingTaskId, setCelebratingTaskId] = useState(null);
 
   const handleStartTransition = () => {
     if (isTransitioning || entered) return;
@@ -348,6 +355,90 @@ export default function App() {
       // eslint-disable-next-line no-console
       console.error('Error creating task', err);
     }
+  };
+
+  const handleEditTaskSubmit = async e => {
+    e.preventDefault();
+    if (!editingTask) return;
+    const title = editTitle.trim();
+    const description = editDescription.trim();
+    const start = editStart.trim();
+    const end = editEnd.trim();
+    if (!title) return;
+
+    if (!isLoggedIn) {
+      setTasks(prev =>
+        prev.map(task =>
+          task.id === editingTask.id
+            ? { ...task, task: title, description, start_date: start, end_date: end, start, end }
+            : task
+        )
+      );
+      setEditingTask(null);
+      setEditTitle('');
+      setEditDescription('');
+      setEditStart('');
+      setEditEnd('');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/tasks/${editingTask.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          task: title,
+          description,
+          start_date: start,
+          end_date: end
+        })
+      });
+      if (!res.ok) {
+        // eslint-disable-next-line no-alert
+        alert('Failed to update task');
+        return;
+      }
+      const updated = await res.json();
+      setTasks(prev => prev.map(task => (task.id === updated.id ? updated : task)));
+      setEditingTask(null);
+      setEditTitle('');
+      setEditDescription('');
+      setEditStart('');
+      setEditEnd('');
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Error updating task', err);
+    }
+  };
+
+  const handleDeleteConfirm = () => {
+    const item = taskToDelete;
+    if (!item) return;
+    setTaskToDelete(null);
+
+    if (!isLoggedIn) {
+      setTasks(prev => prev.filter(task => task.id !== item.id));
+      return;
+    }
+
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/tasks/${item.id}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        if (!res.ok) {
+          // eslint-disable-next-line no-alert
+          alert('Failed to delete task');
+          return;
+        }
+        setTasks(prev => prev.filter(task => task.id !== item.id));
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error deleting task', err);
+      }
+    })();
   };
 
   const filteredTasks = tasks.filter(t => t.task.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -466,39 +557,11 @@ export default function App() {
               }}
               onEdit={(item) => {
                 if (!item) return;
-                const next = window.prompt('Edit task', item.task);
-                if (!next || !next.trim()) return;
-                const newText = next.trim();
-
-                if (!isLoggedIn) {
-                  setTasks(prev =>
-                    prev.map(task => (task.id === item.id ? { ...task, task: newText } : task))
-                  );
-                  return;
-                }
-
-                (async () => {
-                  try {
-                    const res = await fetch(`${API_BASE}/tasks/${item.id}`, {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json' },
-                      credentials: 'include',
-                      body: JSON.stringify({ task: newText })
-                    });
-                    if (!res.ok) {
-                      // eslint-disable-next-line no-alert
-                      alert('Failed to update task');
-                      return;
-                    }
-                    const updated = await res.json();
-                    setTasks(prev =>
-                      prev.map(task => (task.id === updated.id ? updated : task))
-                    );
-                  } catch (err) {
-                    // eslint-disable-next-line no-console
-                    console.error('Error updating task', err);
-                  }
-                })();
+                setEditingTask(item);
+                setEditTitle(item.task || '');
+                setEditDescription(item.description || item.desc || '');
+                setEditStart(item.start_date || item.start || '');
+                setEditEnd(item.end_date || item.end || '');
               }}
               onComplete={(item) => {
                 if (!item) return;
@@ -509,6 +572,8 @@ export default function App() {
                       task.id === item.id ? { ...task, completed: !task.completed } : task
                     )
                   );
+                  setCelebratingTaskId(item.id);
+                  setTimeout(() => setCelebratingTaskId(null), 1500);
                   return;
                 }
 
@@ -527,6 +592,8 @@ export default function App() {
                     setTasks(prev =>
                       prev.map(task => (task.id === updated.id ? updated : task))
                     );
+                    setCelebratingTaskId(item.id);
+                    setTimeout(() => setCelebratingTaskId(null), 1500);
                   } catch (err) {
                     // eslint-disable-next-line no-console
                     console.error('Error completing task', err);
@@ -535,32 +602,9 @@ export default function App() {
               }}
               onDelete={(item) => {
                 if (!item) return;
-
-                if (!window.confirm('Delete this task?')) return;
-
-                if (!isLoggedIn) {
-                  setTasks(prev => prev.filter(task => task.id !== item.id));
-                  return;
-                }
-
-                (async () => {
-                  try {
-                    const res = await fetch(`${API_BASE}/tasks/${item.id}`, {
-                      method: 'DELETE',
-                      credentials: 'include'
-                    });
-                    if (!res.ok) {
-                      // eslint-disable-next-line no-alert
-                      alert('Failed to delete task');
-                      return;
-                    }
-                    setTasks(prev => prev.filter(task => task.id !== item.id));
-                  } catch (err) {
-                    // eslint-disable-next-line no-console
-                    console.error('Error deleting task', err);
-                  }
-                })();
+                setTaskToDelete(item);
               }}
+              celebratingTaskId={celebratingTaskId}
               showGradients={false}
               enableArrowNavigation
               displayScrollbar
@@ -628,6 +672,97 @@ export default function App() {
                       </button>
                     </div>
                   </form>
+                </div>
+              </div>
+            )}
+            {editingTask && (
+              <div className="task-modal-backdrop">
+                <div className="task-modal" onClick={e => e.stopPropagation()}>
+                  <h2 className="task-modal-title">Edit task</h2>
+                  <form className="task-modal-form" onSubmit={handleEditTaskSubmit}>
+                    <div className="field">
+                      <label htmlFor="edit-task-title">Task title</label>
+                      <input
+                        id="edit-task-title"
+                        type="text"
+                        autoFocus
+                        value={editTitle}
+                        onChange={e => setEditTitle(e.target.value)}
+                      />
+                    </div>
+                    <div className="field">
+                      <label htmlFor="edit-task-description">Description</label>
+                      <textarea
+                        id="edit-task-description"
+                        rows={3}
+                        value={editDescription}
+                        onChange={e => setEditDescription(e.target.value)}
+                      />
+                    </div>
+                    <div className="task-modal-grid">
+                      <div className="field">
+                        <label htmlFor="edit-task-start">Start</label>
+                        <input
+                          id="edit-task-start"
+                          type="date"
+                          value={editStart}
+                          onChange={e => setEditStart(e.target.value)}
+                        />
+                      </div>
+                      <div className="field">
+                        <label htmlFor="edit-task-end">End</label>
+                        <input
+                          id="edit-task-end"
+                          type="date"
+                          value={editEnd}
+                          onChange={e => setEditEnd(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="task-modal-actions">
+                      <button
+                        type="button"
+                        className="btn-ghost"
+                        onClick={() => {
+                          setEditingTask(null);
+                          setEditTitle('');
+                          setEditDescription('');
+                          setEditStart('');
+                          setEditEnd('');
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button type="submit" className="btn-primary">
+                        Save changes
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+            {taskToDelete && (
+              <div className="delete-modal-backdrop">
+                <div className="delete-modal" onClick={e => e.stopPropagation()}>
+                  <p className="delete-modal-message">
+                    Do you want to delete <strong>{taskToDelete.task}</strong>?
+                  </p>
+                  <div className="delete-modal-actions">
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => setTaskToDelete(null)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-danger"
+                      onClick={handleDeleteConfirm}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

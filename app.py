@@ -172,16 +172,19 @@ def create_app():
         if not user_id:
             return jsonify({"error": "Unauthorized"}), 401
         
-        data = request.get_json(silent=True) or {} #get json data
-        task_text = (data.get("task") or "").strip() #get task text from json data
+        data = request.get_json(silent=True) or {}
+        task_text = (data.get("task") or "").strip()
+        description = (data.get("description") or "").strip()
+        start_date = (data.get("start_date") or "").strip()
+        end_date = (data.get("end_date") or "").strip()
 
         if not task_text:
             return jsonify({"error": "Task is required"}), 400
-        
+
         db = get_db()
         cur = db.execute(
-            "UPDATE Tasks Set task = ? WHERE id = ? AND user_id = ?",
-            (task_text, task_id, user_id),
+            "UPDATE Tasks SET task = ?, description = ?, start_date = ?, end_date = ? WHERE id = ? AND user_id = ?",
+            (task_text, description or None, start_date or None, end_date or None, task_id, user_id),
         )
         db.commit()
 

@@ -626,6 +626,68 @@ body {
   margin-top: 0.8rem;
 }
 
+.delete-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.9));
+}
+
+.delete-modal {
+  width: 100%;
+  max-width: 380px;
+  border-radius: 1.25rem;
+  padding: 1.5rem 1.75rem;
+  background:
+    radial-gradient(circle at top left, rgba(148, 163, 184, 0.2), transparent 55%),
+    rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(249, 250, 251, 0.8);
+  box-shadow:
+    0 32px 90px rgba(15, 23, 42, 0.95),
+    0 0 0 1px rgba(15, 23, 42, 0.9),
+    inset 0 1px 0 rgba(248, 250, 252, 0.2);
+  backdrop-filter: blur(20px);
+}
+
+.delete-modal-message {
+  margin: 0 0 1.25rem 0;
+  font-size: 0.95rem;
+  color: #e5e7eb;
+  line-height: 1.45;
+}
+
+.delete-modal-message strong {
+  color: #f9fafb;
+}
+
+.delete-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.btn-danger {
+  border-radius: 0.9rem;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.85rem;
+  border: none;
+  color: white;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow:
+    0 14px 45px rgba(239, 68, 68, 0.45),
+    0 10px 18px rgba(15, 23, 42, 0.6);
+  cursor: pointer;
+  transition: filter 120ms ease, transform 120ms ease;
+}
+
+.btn-danger:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
 .task-row {
   display: flex;
   align-items: center;

@@ -33,7 +33,8 @@ const AnimatedList = ({
   itemClassName = '',
   displayScrollbar = true,
   initialSelectedIndex = -1,
-  selectedTaskId = null
+  selectedTaskId = null,
+  celebratingTaskId = null
 }) => {
   const listRef = useRef(null);
   const [selectedIndex, setSelectedIndex] = useState(initialSelectedIndex);
@@ -155,6 +156,9 @@ const AnimatedList = ({
         {items.map((item, index) => {
           const expanded = isExpanded(item, index);
           const title = getItemTitle(item);
+          const itemId = isTaskObject && item && item.id != null ? item.id : null;
+          const isCelebrating = celebratingTaskId != null && itemId === celebratingTaskId;
+          const isCompleted = isTaskObject && item && item.completed;
           return (
             <AnimatedItem
               key={isTaskObject && item && item.id != null ? item.id : index}
@@ -164,7 +168,7 @@ const AnimatedList = ({
               onClick={() => handleItemClick(item, index)}
             >
               <div
-                className={`item ${selectedIndex === index ? 'selected' : ''} ${expanded ? 'item-expanded' : ''} ${itemClassName}`}
+                className={`item ${selectedIndex === index ? 'selected' : ''} ${expanded ? 'item-expanded' : ''} ${isCelebrating ? 'item-celebrate' : ''} ${itemClassName}`}
                 onPointerMove={handleItemPointerMove}
                 onPointerLeave={handleItemPointerLeave}
               >
@@ -184,7 +188,7 @@ const AnimatedList = ({
                     </button>
                     <button
                       type="button"
-                      className="icon-button complete"
+                      className={`icon-button complete ${isCompleted ? 'is-done' : ''}`}
                       aria-label="Mark complete"
                       onClick={() => onComplete && onComplete(item, index)}
                     >
