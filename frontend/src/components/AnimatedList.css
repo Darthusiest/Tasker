@@ -1,0 +1,191 @@
+.scroll-list-container {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  margin: 1.5rem auto;
+  /* Fixed viewport height so inner list can scroll like a wheel */
+  max-height: 420px;
+}
+
+.scroll-list {
+  width: 100%;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  padding-top: 0.75rem; /* lift first task out of strongest fade */
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  /* Fade items near the top/bottom for wheel-like effect */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 1) 2%,
+    rgba(0, 0, 0, 1) 98%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 1) 2%,
+    rgba(0, 0, 0, 1) 98%,
+    transparent 100%
+  );
+}
+
+.scroll-list.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.item {
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.9rem;
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.16), rgba(248, 250, 252, 0) 38%),
+    radial-gradient(120% 120% at 12% 0%, rgba(248, 250, 252, 0.18), rgba(248, 250, 252, 0) 55%),
+    rgba(15, 23, 42, 0.62);
+  border: 1px solid rgba(248, 250, 252, 0.62);
+  box-shadow:
+    0 18px 60px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(2, 6, 23, 0.55),
+    inset 0 1px 0 rgba(248, 250, 252, 0.26),
+    inset 0 -10px 30px rgba(2, 6, 23, 0.25);
+  transition:
+    border-color 70ms ease-out,
+    transform 70ms ease-out,
+    box-shadow 90ms ease-out;
+  will-change: transform, background, box-shadow, border-color;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  position: relative;
+  transform: translateZ(0);
+  scroll-snap-align: center;
+}
+
+.item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 80ms ease-out;
+  background:
+    radial-gradient(
+      220px 160px at var(--mx, 20%) var(--my, 20%),
+      rgba(248, 250, 252, 0.22),
+      rgba(248, 250, 252, 0) 70%
+    );
+  mix-blend-mode: screen;
+}
+
+.item:hover {
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.22), rgba(248, 250, 252, 0) 40%),
+    radial-gradient(120% 120% at 12% 0%, rgba(248, 250, 252, 0.22), rgba(248, 250, 252, 0) 55%),
+    rgba(15, 23, 42, 0.7);
+  border-color: rgba(249, 250, 251, 0.98);
+  transform: translateY(-1px);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.62),
+    0 0 0 1px rgba(2, 6, 23, 0.65),
+    inset 0 1px 0 rgba(248, 250, 252, 0.32),
+    inset 0 -12px 34px rgba(2, 6, 23, 0.28);
+}
+
+.item:hover::before {
+  opacity: 1;
+}
+
+.item.selected {
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.22), rgba(248, 250, 252, 0) 40%),
+    radial-gradient(120% 120% at 12% 0%, rgba(248, 250, 252, 0.24), rgba(248, 250, 252, 0) 55%),
+    rgba(15, 23, 42, 0.76);
+  border-color: rgba(248, 250, 252, 1);
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.68),
+    0 0 0 1px rgba(2, 6, 23, 0.72),
+    inset 0 0 0 1px rgba(59, 130, 246, 0.55),
+    inset 0 1px 0 rgba(248, 250, 252, 0.38),
+    inset 0 -14px 36px rgba(2, 6, 23, 0.3);
+}
+
+.item-text {
+  font-size: 0.9rem;
+  color: #e5e7eb;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.icon-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid rgba(249, 250, 251, 0.85);
+  background: transparent;
+  color: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    background-color 80ms ease-out,
+    border-color 80ms ease-out,
+    color 80ms ease-out,
+    transform 80ms ease-out;
+  will-change: background-color, border-color, color, transform;
+}
+
+.icon-button:hover {
+  transform: translateY(-1px);
+}
+
+.icon-button.edit:hover {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.15);
+  color: #facc15;
+}
+
+.icon-button.complete:hover {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.icon-button.delete:hover {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+.top-gradient,
+.bottom-gradient {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50px;
+  pointer-events: none;
+}
+
+.top-gradient {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(15, 23, 42, 1), transparent);
+}
+
+.bottom-gradient {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(15, 23, 42, 1), transparent);
+}
+
