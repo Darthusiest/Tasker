@@ -474,17 +474,16 @@ export default function App() {
 
   return (
     <>
-      {!entered ? (
-        showAuth ? (
-          <AuthScreen
-            onBack={() => setShowAuth(false)}
-            onLoginSuccess={() => {
-              setIsLoggedIn(true);
-              setShowAuth(false);
-            }}
-          />
-        ) : (
-          <SplashScreen
+      {showAuth ? (
+        <AuthScreen
+          onBack={() => setShowAuth(false)}
+          onLoginSuccess={() => {
+            setIsLoggedIn(true);
+            setShowAuth(false);
+          }}
+        />
+      ) : !entered ? (
+        <SplashScreen
             onEnter={handleStartTransition}
             isLoggedIn={isLoggedIn}
             onLoginClick={() => {
@@ -514,6 +513,38 @@ export default function App() {
         )
       ) : (
         <div className="app-shell interior">
+          <div className="interior-login">
+            <button
+              type="button"
+              className="splash-login-button"
+              onClick={() => {
+                if (isLoggedIn) {
+                  (async () => {
+                    try {
+                      const res = await fetch(`${API_BASE}/logout`, {
+                        method: 'POST',
+                        credentials: 'include'
+                      });
+                      if (!res.ok) {
+                        // eslint-disable-next-line no-alert
+                        alert('Logout failed');
+                      }
+                    } catch (err) {
+                      // eslint-disable-next-line no-console
+                      console.error('Logout error', err);
+                    } finally {
+                      setIsLoggedIn(false);
+                    }
+                  })();
+                } else {
+                  setShowAuth(true);
+                }
+              }}
+            >
+              <span className="splash-login-icon">⎆</span>
+              <span className="splash-login-text">{isLoggedIn ? 'LOGOUT' : 'LOGIN'}</span>
+            </button>
+          </div>
           <div className="mini-logo">
             <span className="mini-logo-hitbox" onClick={handleLogoClick} aria-hidden />
             <ASCIIText text="Tasker" enableWaves asciiFontSize={4} textFontSize={230} planeBaseHeight={7} />
