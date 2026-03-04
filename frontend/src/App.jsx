@@ -351,7 +351,6 @@ export default function App() {
   };
 
   const filteredTasks = tasks.filter(t => t.task.toLowerCase().includes(searchQuery.toLowerCase()));
-  const filteredItems = filteredTasks.map(t => t.task);
 
   useEffect(() => {
     if (!entered || !isLoggedIn) return;
@@ -458,29 +457,28 @@ export default function App() {
               </button>
             </div>
             <AnimatedList
-              items={filteredItems}
-              onItemSelect={(item, index) => {
-                const t = filteredTasks[index];
-                if (!t) return;
-                setSelectedTaskId(prev => (prev === t.id ? null : t.id));
+              items={filteredTasks}
+              selectedTaskId={selectedTaskId}
+              onItemSelect={(item) => {
+                if (!item || item.id == null) return;
+                setSelectedTaskId(prev => (prev === item.id ? null : item.id));
               }}
-              onEdit={(item, index) => {
-                const t = filteredTasks[index];
-                if (!t) return;
-                const next = window.prompt('Edit task', t.task);
+              onEdit={(item) => {
+                if (!item) return;
+                const next = window.prompt('Edit task', item.task);
                 if (!next || !next.trim()) return;
                 const newText = next.trim();
 
                 if (!isLoggedIn) {
                   setTasks(prev =>
-                    prev.map(task => (task.id === t.id ? { ...task, task: newText } : task))
+                    prev.map(task => (task.id === item.id ? { ...task, task: newText } : task))
                   );
                   return;
                 }
 
                 (async () => {
                   try {
-                    const res = await fetch(`${API_BASE}/tasks/${t.id}`, {
+                    const res = await fetch(`${API_BASE}/tasks/${item.id}`, {
                       method: 'PATCH',
                       headers: { 'Content-Type': 'application/json' },
                       credentials: 'include',
@@ -501,14 +499,13 @@ export default function App() {
                   }
                 })();
               }}
-              onComplete={(item, index) => {
-                const t = filteredTasks[index];
-                if (!t) return;
+              onComplete={(item) => {
+                if (!item) return;
 
                 if (!isLoggedIn) {
                   setTasks(prev =>
                     prev.map(task =>
-                      task.id === t.id ? { ...task, completed: !task.completed } : task
+                      task.id === item.id ? { ...task, completed: !task.completed } : task
                     )
                   );
                   return;
@@ -516,7 +513,7 @@ export default function App() {
 
                 (async () => {
                   try {
-                    const res = await fetch(`${API_BASE}/tasks/${t.id}/complete`, {
+                    const res = await fetch(`${API_BASE}/tasks/${item.id}/complete`, {
                       method: 'PATCH',
                       credentials: 'include'
                     });
@@ -535,20 +532,19 @@ export default function App() {
                   }
                 })();
               }}
-              onDelete={(item, index) => {
-                const t = filteredTasks[index];
-                if (!t) return;
+              onDelete={(item) => {
+                if (!item) return;
 
                 if (!window.confirm('Delete this task?')) return;
 
                 if (!isLoggedIn) {
-                  setTasks(prev => prev.filter(task => task.id !== t.id));
+                  setTasks(prev => prev.filter(task => task.id !== item.id));
                   return;
                 }
 
                 (async () => {
                   try {
-                    const res = await fetch(`${API_BASE}/tasks/${t.id}`, {
+                    const res = await fetch(`${API_BASE}/tasks/${item.id}`, {
                       method: 'DELETE',
                       credentials: 'include'
                     });
@@ -557,7 +553,7 @@ export default function App() {
                       alert('Failed to delete task');
                       return;
                     }
-                    setTasks(prev => prev.filter(task => task.id !== t.id));
+                    setTasks(prev => prev.filter(task => task.id !== item.id));
                   } catch (err) {
                     // eslint-disable-next-line no-console
                     console.error('Error deleting task', err);
@@ -568,46 +564,6 @@ export default function App() {
               enableArrowNavigation
               displayScrollbar
             />
-            {selectedTaskId && (
-              <div className="task-details">
-                {(() => {
-                  const task = tasks.find(t => t.id === selectedTaskId);
-                  if (!task) return null;
-                  const created = task.created_at
-                    ? new Date(task.created_at).toLocaleString()
-                    : 'Unknown';
-                  return (
-                    <>
-                      <div className="task-details-header">
-                        <span className="task-details-title">{task.task}</span>
-                        {task.completed && <span className="chip done">Completed</span>}
-                      </div>
-                      <div className="task-details-meta">
-                        <div>
-                          <span className="task-details-label">Created:</span>
-                          <span>{created}</span>
-                        </div>
-                        {task.start_date && (
-                          <div>
-                            <span className="task-details-label">Start:</span>
-                            <span>{task.start_date}</span>
-                          </div>
-                        )}
-                        {task.end_date && (
-                          <div>
-                            <span className="task-details-label">End:</span>
-                            <span>{task.end_date}</span>
-                          </div>
-                        )}
-                      </div>
-                      {task.description && (
-                        <p className="task-details-hint">{task.description}</p>
-                      )}
-                    </>
-                  );
-                })()}
-              </div>
-            )}
             {isCreatingTask && (
               <div className="task-modal-backdrop">
                 <div className="task-modal" onClick={e => e.stopPropagation()}>

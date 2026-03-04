@@ -32,10 +32,12 @@ const AnimatedList = ({
   className = '',
   itemClassName = '',
   displayScrollbar = true,
-  initialSelectedIndex = -1
+  initialSelectedIndex = -1,
+  selectedTaskId = null
 }) => {
   const listRef = useRef(null);
   const [selectedIndex, setSelectedIndex] = useState(initialSelectedIndex);
+  const isTaskObject = items.length > 0 && typeof items[0] === 'object' && items[0] !== null && 'task' in items[0];
   const [keyboardNav, setKeyboardNav] = useState(false);
   const [topGradientOpacity, setTopGradientOpacity] = useState(0);
   const [bottomGradientOpacity, setBottomGradientOpacity] = useState(1);
@@ -74,6 +76,19 @@ const AnimatedList = ({
       }
     },
     [onItemSelect]
+  );
+
+  const getItemId = useCallback(
+    (item, index) => (isTaskObject && item && item.id != null ? item.id : index),
+    [isTaskObject]
+  );
+  const getItemTitle = useCallback(
+    (item) => (isTaskObject && item && typeof item.task === 'string' ? item.task : String(item)),
+    [isTaskObject]
+  );
+  const isExpanded = useCallback(
+    (item, index) => selectedTaskId != null && getItemId(item, index) === selectedTaskId,
+    [selectedTaskId, getItemId]
   );
 
   const handleScroll = useCallback(e => {
@@ -137,49 +152,81 @@ const AnimatedList = ({
         className={`scroll-list ${!displayScrollbar ? 'no-scrollbar' : ''}`}
         onScroll={handleScroll}
       >
-        {items.map((item, index) => (
-          <AnimatedItem
-            key={index}
-            delay={0.1}
-            index={index}
-            onMouseEnter={() => handleItemMouseEnter(index)}
-            onClick={() => handleItemClick(item, index)}
-          >
-            <div
-              className={`item ${selectedIndex === index ? 'selected' : ''} ${itemClassName}`}
-              onPointerMove={handleItemPointerMove}
-              onPointerLeave={handleItemPointerLeave}
+        {items.map((item, index) => {
+          const expanded = isExpanded(item, index);
+          const title = getItemTitle(item);
+          return (
+            <AnimatedItem
+              key={isTaskObject && item && item.id != null ? item.id : index}
+              delay={0.1}
+              index={index}
+              onMouseEnter={() => handleItemMouseEnter(index)}
+              onClick={() => handleItemClick(item, index)}
             >
-              <p className="item-text">{item}</p>
-              <div className="item-actions" onClick={e => e.stopPropagation()}>
-                <button
-                  type="button"
-                  className="icon-button edit"
-                  aria-label="Edit task"
-                  onClick={() => onEdit && onEdit(item, index)}
-                >
-                  ✏
-                </button>
-                <button
-                  type="button"
-                  className="icon-button complete"
-                  aria-label="Mark complete"
-                  onClick={() => onComplete && onComplete(item, index)}
-                >
-                  ✓
-                </button>
-                <button
-                  type="button"
-                  className="icon-button delete"
-                  aria-label="Delete task"
-                  onClick={() => onDelete && onDelete(item, index)}
-                >
-                  ✕
-                </button>
+              <div
+                className={`item ${selectedIndex === index ? 'selected' : ''} ${expanded ? 'item-expanded' : ''} ${itemClassName}`}
+                onPointerMove={handleItemPointerMove}
+                onPointerLeave={handleItemPointerLeave}
+              >
+                <div className="item-row">
+                  <span className={`item-arrow ${expanded ? 'expanded' : ''}`} aria-hidden>
+                    {expanded ? '▼' : '▶'}
+                  </span>
+                  <p className="item-text">{title}</p>
+                  <div className="item-actions" onClick={e => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      className="icon-button edit"
+                      aria-label="Edit task"
+                      onClick={() => onEdit && onEdit(item, index)}
+                    >
+                      ✏
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-button complete"
+                      aria-label="Mark complete"
+                      onClick={() => onComplete && onComplete(item, index)}
+                    >
+                      ✓
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-button delete"
+                      aria-label="Delete task"
+                      onClick={() => onDelete && onDelete(item, index)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+                {isTaskObject && item && expanded && (
+                  <div className="item-detail">
+                    {item.description && <p className="item-detail-description">{item.description}</p>}
+                    <div className="item-detail-meta">
+                      {item.created_at && (
+                        <span>
+                          <span className="item-detail-label">Created:</span>{' '}
+                          {new Date(item.created_at).toLocaleString()}
+                        </span>
+                      )}
+                      {(item.start_date || item.start) && (
+                        <span>
+                          <span className="item-detail-label">Start:</span> {item.start_date || item.start}
+                        </span>
+                      )}
+                      {(item.end_date || item.end) && (
+                        <span>
+                          <span className="item-detail-label">End:</span> {item.end_date || item.end}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          </AnimatedItem>
-        ))}
+            </AnimatedItem>
+          );
+        })}
       </div>
       {showGradients && (
         <>
