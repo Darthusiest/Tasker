@@ -18,13 +18,19 @@ def create_app():
 
     # CORS: allow frontend (local dev or Render static site URL)
     origins = ["http://localhost:5173"]
-    if os.environ.get("FRONTEND_URL"):
-        origins.append(os.environ.get("FRONTEND_URL").rstrip("/"))
+    frontend_url = os.environ.get("FRONTEND_URL")
+    if frontend_url:
+        origins.append(frontend_url.rstrip("/"))
     CORS(
         app,
         resources={r"/*": {"origins": origins}},
         supports_credentials=True,
     )
+
+    # Cross-origin session cookie: required when frontend and API are on different origins (e.g. Render)
+    if frontend_url:
+        app.config["SESSION_COOKIE_SAMESITE"] = "None"
+        app.config["SESSION_COOKIE_SECURE"] = True
 
     # ensure new optional columns exist on Tasks for description and dates
     with sqlite3.connect(DB_PATH) as conn:

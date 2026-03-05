@@ -340,6 +340,26 @@ export default function App() {
 
   const [tasks, setTasks] = useState([]);
 
+  // Restore session on load: if we have a valid session cookie, stay logged in and load tasks
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetchWithTimeout(`${API_BASE}/tasks`, { credentials: 'include' }, 65000);
+        if (!cancelled && res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.tasks)) {
+            setTasks(data.tasks);
+            setIsLoggedIn(true);
+          }
+        }
+      } catch {
+        // ignore: no session or network
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const handleAddTaskClick = () => {
     setNewTaskTitle('');
     setNewTaskDescription('');
@@ -380,20 +400,25 @@ export default function App() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/tasks`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          task: taskText,
-          description,
-          start_date: start,
-          end_date: end
-        })
-      });
+      const res = await fetchWithTimeout(
+        `${API_BASE}/tasks`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            task: taskText,
+            description,
+            start_date: start,
+            end_date: end
+          })
+        },
+        65000
+      );
       if (!res.ok) {
+        const err = await res.json().catch(() => null);
         // eslint-disable-next-line no-alert
-        alert('Failed to create task');
+        alert(err?.error ? `Failed to create task: ${err.error}` : 'Failed to create task');
         return;
       }
       const created = await res.json();
@@ -406,6 +431,8 @@ export default function App() {
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Error creating task', err);
+      // eslint-disable-next-line no-alert
+      alert('Network error. Try again in a moment.');
     }
   };
 
@@ -435,20 +462,25 @@ export default function App() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/tasks/${editingTask.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          task: title,
-          description,
-          start_date: start,
-          end_date: end
-        })
-      });
+      const res = await fetchWithTimeout(
+        `${API_BASE}/tasks/${editingTask.id}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            task: title,
+            description,
+            start_date: start,
+            end_date: end
+          })
+        },
+        65000
+      );
       if (!res.ok) {
+        const err = await res.json().catch(() => null);
         // eslint-disable-next-line no-alert
-        alert('Failed to update task');
+        alert(err?.error ? `Failed to update task: ${err.error}` : 'Failed to update task');
         return;
       }
       const updated = await res.json();
@@ -461,6 +493,8 @@ export default function App() {
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Error updating task', err);
+      // eslint-disable-next-line no-alert
+      alert('Network error. Try again in a moment.');
     }
   };
 
@@ -476,19 +510,23 @@ export default function App() {
 
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/tasks/${item.id}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
+        const res = await fetchWithTimeout(
+          `${API_BASE}/tasks/${item.id}`,
+          { method: 'DELETE', credentials: 'include' },
+          65000
+        );
         if (!res.ok) {
+          const err = await res.json().catch(() => null);
           // eslint-disable-next-line no-alert
-          alert('Failed to delete task');
+          alert(err?.error ? `Failed to delete task: ${err.error}` : 'Failed to delete task');
           return;
         }
         setTasks(prev => prev.filter(task => task.id !== item.id));
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error('Error deleting task', err);
+        // eslint-disable-next-line no-alert
+        alert('Network error. Try again in a moment.');
       }
     })();
   };
@@ -501,9 +539,11 @@ export default function App() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/tasks`, {
-          credentials: 'include'
-        });
+        const res = await fetchWithTimeout(
+          `${API_BASE}/tasks`,
+          { credentials: 'include' },
+          65000
+        );
         if (!res.ok) {
           // eslint-disable-next-line no-console
           console.error('Failed to load tasks', await res.text());
@@ -545,10 +585,11 @@ export default function App() {
             onLogoutClick={() => {
               (async () => {
                 try {
-                  const res = await fetch(`${API_BASE}/logout`, {
-                    method: 'POST',
-                    credentials: 'include'
-                  });
+                  const res = await fetchWithTimeout(
+                    `${API_BASE}/logout`,
+                    { method: 'POST', credentials: 'include' },
+                    65000
+                  );
                   if (!res.ok) {
                     // eslint-disable-next-line no-alert
                     alert('Logout failed');
@@ -584,10 +625,11 @@ export default function App() {
                 if (isLoggedIn) {
                   (async () => {
                     try {
-                      const res = await fetch(`${API_BASE}/logout`, {
-                        method: 'POST',
-                        credentials: 'include'
-                      });
+                      const res = await fetchWithTimeout(
+                        `${API_BASE}/logout`,
+                        { method: 'POST', credentials: 'include' },
+                        65000
+                      );
                       if (!res.ok) {
                         // eslint-disable-next-line no-alert
                         alert('Logout failed');
@@ -673,15 +715,20 @@ export default function App() {
 
                 (async () => {
                   try {
-                    const res = await fetch(`${API_BASE}/tasks/${item.id}/complete`, {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json' },
-                      credentials: 'include',
-                      body: JSON.stringify({ completed: nextCompleted })
-                    });
+                    const res = await fetchWithTimeout(
+                      `${API_BASE}/tasks/${item.id}/complete`,
+                      {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ completed: nextCompleted })
+                      },
+                      65000
+                    );
                     if (!res.ok) {
+                      const err = await res.json().catch(() => null);
                       // eslint-disable-next-line no-alert
-                      alert('Failed to update task');
+                      alert(err?.error ? `Failed to update task: ${err.error}` : 'Failed to update task');
                       return;
                     }
                     const updated = await res.json();
@@ -695,6 +742,8 @@ export default function App() {
                   } catch (err) {
                     // eslint-disable-next-line no-console
                     console.error('Error completing task', err);
+                    // eslint-disable-next-line no-alert
+                    alert('Network error. Try again in a moment.');
                   }
                 })();
               }}
