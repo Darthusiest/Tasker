@@ -773,14 +773,18 @@ body {
 
 .splash-root {
   cursor: pointer;
+  /* Subtle blue–violet tint so splash feels colored, not pure black */
+  background: radial-gradient(ellipse 120% 80% at 50% 20%, rgba(30, 58, 138, 0.35) 0%, rgba(15, 23, 42, 0.6) 45%, #000000 100%);
 }
 
 .splash-root::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at top, rgba(209, 213, 219, 0.4), transparent 55%);
-  opacity: 0.8;
+  background:
+    radial-gradient(circle at 70% 30%, rgba(99, 102, 241, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at top, rgba(147, 197, 253, 0.25), transparent 55%);
+  opacity: 0.9;
   mix-blend-mode: screen;
   pointer-events: none;
 }
@@ -799,9 +803,9 @@ body {
   gap: 0.35rem;
   padding: 0.5rem 1.25rem;
   border-radius: 999px;
-  border: 1px solid rgba(249, 250, 251, 0.9);
-  background: rgba(15, 23, 42, 0.65);
-  color: #f9fafb;
+  border: 1px solid rgba(129, 140, 248, 0.7);
+  background: rgba(30, 41, 59, 0.75);
+  color: #e0e7ff;
   cursor: pointer;
   font-family: 'Courier New', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
     'Lucida Console', monospace;
@@ -811,11 +815,12 @@ body {
   text-rendering: geometricPrecision;
   text-shadow:
     0 0 2px rgba(15, 23, 42, 0.9),
-    0 0 6px rgba(255, 255, 255, 0.7);
+    0 0 8px rgba(129, 140, 248, 0.5);
   box-shadow:
-    0 0 0 1px rgba(15, 23, 42, 0.9),
-    0 10px 26px rgba(0, 0, 0, 0.65),
-    inset 0 1px 0 rgba(248, 250, 252, 0.3);
+    0 0 0 1px rgba(30, 41, 59, 0.9),
+    0 0 20px rgba(99, 102, 241, 0.15),
+    0 10px 26px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition:
     transform 90ms ease-out,
     box-shadow 110ms ease-out,
@@ -825,12 +830,13 @@ body {
 
 .splash-login-button:hover {
   transform: translateY(-1px);
-  background: rgba(15, 23, 42, 0.85);
-  border-color: rgba(249, 250, 251, 1);
+  background: rgba(51, 65, 85, 0.9);
+  border-color: rgba(165, 180, 252, 0.9);
   box-shadow:
-    0 14px 32px rgba(0, 0, 0, 0.9),
-    0 0 0 1px rgba(15, 23, 42, 1),
-    inset 0 1px 0 rgba(248, 250, 252, 0.4);
+    0 0 0 1px rgba(30, 41, 59, 1),
+    0 0 28px rgba(99, 102, 241, 0.25),
+    0 14px 32px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .splash-login-icon {
@@ -935,9 +941,10 @@ body {
 .splash-hint {
   margin-top: 0.75rem;
   font-size: 0.8rem;
-  color: #f9fafb;
+  color: #c7d2fe;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
 }
 
 /* ---------- Mobile (phone) ---------- */
@@ -1048,8 +1055,8 @@ body {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  /* Soft blue–indigo–violet gradient (cool range to avoid red bleed with mix-blend-mode) */
-  background-image: linear-gradient(180deg, #bfdbfe 0%, #c7d2fe 35%, #ddd6fe 65%, #e9e5ff 100%);
+  /* Stronger blue–indigo–violet so the logo reads as colored with mix-blend-mode */
+  background-image: linear-gradient(180deg, #93c5fd 0%, #a5b4fc 30%, #c4b5fd 60%, #ddd6fe 100%);
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
