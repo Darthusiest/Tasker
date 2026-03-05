@@ -147,9 +147,8 @@ class AsciiFilter {
   }
 
   hue() {
-    const deg = (Math.atan2(this.dy, this.dx) * 180) / Math.PI;
-    this.deg += (deg - this.deg) * 0.075;
-    this.domElement.style.filter = 'hue-rotate(' + this.deg.toFixed(1) + 'deg)';
+    /* Disabled: hue-rotate was shifting the ASCII text to red/magenta. Keep color from CSS. */
+    this.domElement.style.filter = 'none';
   }
 
   asciify(ctx, w, h) {
