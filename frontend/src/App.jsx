@@ -5,7 +5,21 @@ import AnimatedList from './components/AnimatedList.jsx';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5050';
 
-function SplashScreen({ onEnter, onLoginClick, onLogoutClick, isLoggedIn }) {
+function useIsMobile(breakpoint = 640) {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' && window.innerWidth < breakpoint
+  );
+  useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${breakpoint}px)`);
+    const update = () => setIsMobile(mql.matches);
+    update();
+    mql.addEventListener('change', update);
+    return () => mql.removeEventListener('change', update);
+  }, [breakpoint]);
+  return isMobile;
+}
+
+function SplashScreen({ onEnter, onLoginClick, onLogoutClick, isLoggedIn, isMobile }) {
   return (
     <div className="fullscreen splash-root" onClick={onEnter}>
       <div className="splash-login">
@@ -27,7 +41,14 @@ function SplashScreen({ onEnter, onLoginClick, onLogoutClick, isLoggedIn }) {
           <span className="splash-login-text">{isLoggedIn ? 'LOGOUT' : 'LOGIN'}</span>
         </button>
       </div>
-      <ASCIIText text="Tasker" enableWaves asciiFontSize={8} textFontSize={200} />
+      <div className="splash-logo-wrap">
+        <ASCIIText
+          text="Tasker"
+          enableWaves
+          asciiFontSize={isMobile ? 5 : 8}
+          textFontSize={isMobile ? 72 : 200}
+        />
+      </div>
       <div className="centered-overlay">
         <div className="splash-hint">click anywhere to enter</div>
       </div>
@@ -263,6 +284,7 @@ export default function App() {
   const [editEnd, setEditEnd] = useState('');
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [celebratingTaskId, setCelebratingTaskId] = useState(null);
+  const isMobile = useIsMobile(640);
 
   const handleStartTransition = () => {
     if (isTransitioning || entered) return;
@@ -486,6 +508,7 @@ export default function App() {
         <SplashScreen
             onEnter={handleStartTransition}
             isLoggedIn={isLoggedIn}
+            isMobile={isMobile}
             onLoginClick={() => {
               setShowAuth(true);
             }}
@@ -512,8 +535,19 @@ export default function App() {
           />
       ) : (
         <div className="app-shell interior">
-          <div className="interior-login">
-            <button
+          <div className="interior-header">
+            <div className="mini-logo">
+              <span className="mini-logo-hitbox" onClick={handleLogoClick} aria-hidden />
+              <ASCIIText
+                text="Tasker"
+                enableWaves
+                asciiFontSize={4}
+                textFontSize={isMobile ? 90 : 230}
+                planeBaseHeight={7}
+              />
+            </div>
+            <div className="interior-login">
+              <button
               type="button"
               className="splash-login-button"
               onClick={() => {
@@ -543,10 +577,7 @@ export default function App() {
               <span className="splash-login-icon">⎆</span>
               <span className="splash-login-text">{isLoggedIn ? 'LOGOUT' : 'LOGIN'}</span>
             </button>
-          </div>
-          <div className="mini-logo">
-            <span className="mini-logo-hitbox" onClick={handleLogoClick} aria-hidden />
-            <ASCIIText text="Tasker" enableWaves asciiFontSize={4} textFontSize={230} planeBaseHeight={7} />
+            </div>
           </div>
           <div className="dither-bg">
             <div style={{ width: '100%', height: '100%', position: 'relative' }}>

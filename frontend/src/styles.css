@@ -58,6 +58,17 @@ body {
   background: #000000;
 }
 
+.interior-header {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.interior-header > * {
+  pointer-events: auto;
+}
+
 .dither-bg {
   position: absolute;
   inset: 0;
@@ -744,6 +755,22 @@ body {
   border: 1px solid rgba(37, 99, 235, 0.7);
 }
 
+.splash-logo-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.splash-logo-wrap .ascii-text-container {
+  width: 100%;
+  height: 100%;
+  max-width: 90vw;
+  max-height: 55vh;
+}
+
 .splash-root {
   cursor: pointer;
 }
@@ -911,6 +938,95 @@ body {
   color: #f9fafb;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+}
+
+/* ---------- Mobile (phone) ---------- */
+@media (max-width: 640px) {
+  .splash-logo-wrap .ascii-text-container {
+    max-height: 45vh;
+  }
+
+  .centered-overlay {
+    transform: translateY(120px);
+  }
+
+  .splash-hint {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+  }
+
+  .splash-login-button,
+  .interior-login .splash-login-button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.65rem 1.35rem;
+    font-size: 0.85rem;
+  }
+
+  /* Interior: header row + overlay below so nothing overlaps */
+  .interior-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    min-height: 48px;
+  }
+
+  .mini-logo {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 120px;
+    height: 44px;
+    flex-shrink: 0;
+  }
+
+  .mini-logo-hitbox {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .interior-login {
+    position: relative;
+    top: 0;
+    right: 0;
+    flex-shrink: 0;
+  }
+
+  .interior-overlay {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.75rem 1rem 1.5rem;
+  }
+
+  .task-search-bar {
+    position: relative;
+    top: 0;
+    left: 0;
+    transform: none;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .task-search-bar input {
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+    flex: 1;
+  }
+
+  .scroll-list-container {
+    max-height: 50vh;
+  }
+
+  .task-modal,
+  .delete-modal {
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
 }
 
 .ascii-text-container canvas {
