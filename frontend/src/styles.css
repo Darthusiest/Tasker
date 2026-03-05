@@ -1048,10 +1048,11 @@ body {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background-image: radial-gradient(circle, #ff6188 0%, #fc9867 50%, #ffd866 100%);
-  background-attachment: fixed;
+  /* Neutral gradient to avoid red/pink bleed with mix-blend-mode */
+  background-image: linear-gradient(180deg, #f9fafb 0%, #e5e7eb 50%, #d1d5db 100%);
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
+  background-clip: text;
   z-index: 9;
   mix-blend-mode: difference;
 }
