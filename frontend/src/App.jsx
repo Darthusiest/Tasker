@@ -5,6 +5,12 @@ import AnimatedList from './components/AnimatedList.jsx';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5050';
 
+function fetchWithTimeout(url, options = {}, timeoutMs = 65000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+  return fetch(url, { ...options, signal: ctrl.signal }).finally(() => clearTimeout(t));
+}
+
 function useIsMobile(breakpoint = 640) {
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' && window.innerWidth < breakpoint
@@ -105,12 +111,16 @@ function AuthScreen({ onBack, onLoginSuccess }) {
                     return;
                   }
                   try {
-                    const res = await fetch(`${API_BASE}/login`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      credentials: 'include',
-                      body: JSON.stringify({ username, password })
-                    });
+                    const res = await fetchWithTimeout(
+                      `${API_BASE}/login`,
+                      {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ username, password })
+                      },
+                      65000
+                    );
                     if (!res.ok) {
                       const err = await res.json().catch(() => null);
                       // eslint-disable-next-line no-alert
@@ -123,8 +133,16 @@ function AuthScreen({ onBack, onLoginSuccess }) {
                   } catch (err) {
                     // eslint-disable-next-line no-console
                     console.error('Login error', err);
+                    const isLocalhostApi = API_BASE.startsWith('http://localhost');
+                    const isLiveSite = typeof window !== 'undefined' && !window.location.hostname.includes('localhost');
+                    const msg =
+                      isLiveSite && isLocalhostApi
+                        ? 'Cannot reach the server. The app may be misconfigured: set VITE_API_URL to your backend URL and redeploy the frontend.'
+                        : err.name === 'AbortError'
+                          ? 'Request timed out. The server may be waking up—please try again in a moment.'
+                          : 'Network error while logging in. Check your connection; if using the live site, try again in a minute (server may be waking).';
                     // eslint-disable-next-line no-alert
-                    alert('Network error while logging in.');
+                    alert(msg);
                   }
                 }}
               >
@@ -185,11 +203,15 @@ function AuthScreen({ onBack, onLoginSuccess }) {
                     return;
                   }
                   try {
-                    const res = await fetch(`${API_BASE}/register`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ username, password })
-                    });
+                    const res = await fetchWithTimeout(
+                      `${API_BASE}/register`,
+                      {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                      },
+                      65000
+                    );
                     if (!res.ok) {
                       const err = await res.json().catch(() => null);
                       // eslint-disable-next-line no-alert
@@ -202,8 +224,16 @@ function AuthScreen({ onBack, onLoginSuccess }) {
                   } catch (err) {
                     // eslint-disable-next-line no-console
                     console.error('Signup error', err);
+                    const isLocalhostApi = API_BASE.startsWith('http://localhost');
+                    const isLiveSite = typeof window !== 'undefined' && !window.location.hostname.includes('localhost');
+                    const msg =
+                      isLiveSite && isLocalhostApi
+                        ? 'Cannot reach the server. Set VITE_API_URL to your backend URL and redeploy the frontend.'
+                        : err.name === 'AbortError'
+                          ? 'Request timed out. Try again in a moment.'
+                          : 'Network error while signing up. Check your connection or try again in a minute.';
                     // eslint-disable-next-line no-alert
-                    alert('Network error while signing up.');
+                    alert(msg);
                   }
                 }}
               >
