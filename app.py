@@ -13,7 +13,15 @@ DB_PATH = BASE_DIR / "data" / "database.db"
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 def create_app():
-    app = Flask(__name__)
+    dist_dir = BASE_DIR / "frontend" / "dist"
+    static_dir = dist_dir / "assets"
+
+    app = Flask(
+        __name__,
+        static_folder=str(static_dir),
+        static_url_path="/assets",
+        template_folder=str(dist_dir),
+    )
     app.secret_key = os.environ.get("SECRET_KEY", "change_me_later")
 
     # CORS: allow frontend (local dev or Render static site URL)
@@ -65,9 +73,16 @@ def create_app():
 
     @app.get("/")
     def root():
-        frontend_index = BASE_DIR / "frontend" / "index.html"
-        if frontend_index.exists():
-            return send_from_directory(frontend_index.parent, frontend_index.name)
+        dist_index = dist_dir / "index.html"
+        if dist_index.exists():
+            return send_from_directory(dist_dir, dist_index.name)
+        return "Tasker backend is live", 200
+
+    @app.get("/<path:path>")
+    def spa_fallback(path):
+        dist_index = dist_dir / "index.html"
+        if dist_index.exists():
+            return send_from_directory(dist_dir, dist_index.name)
         return "Tasker backend is live", 200
 
     #helper function to format task data
