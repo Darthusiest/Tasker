@@ -1,7 +1,7 @@
 # server routes (GET/POST/etc) + connects to DB
 
 import os
-from flask import Flask, request, jsonify, g, session
+from flask import Flask, request, jsonify, g, session, send_from_directory
 from flask_cors import CORS
 import sqlite3
 from pathlib import Path
@@ -62,6 +62,13 @@ def create_app():
     @app.get("/health") #health check route
     def health():
         return jsonify({"ok": True})
+
+    @app.get("/")
+    def root():
+        frontend_index = BASE_DIR / "frontend" / "index.html"
+        if frontend_index.exists():
+            return send_from_directory(frontend_index.parent, frontend_index.name)
+        return "Tasker backend is live", 200
 
     #helper function to format task data
     def format_task(row):
