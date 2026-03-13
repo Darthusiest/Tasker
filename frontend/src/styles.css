@@ -132,6 +132,35 @@ body {
   backdrop-filter: blur(18px);
 }
 
+.task-bulk-delete-button {
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.75rem;
+  border: 1px solid rgba(239, 68, 68, 0.7);
+  background: rgba(127, 29, 29, 0.65);
+  color: #fee2e2;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(15, 23, 42, 0.8);
+  transition:
+    transform 90ms ease-out,
+    box-shadow 110ms ease-out,
+    background-color 90ms ease-out,
+    border-color 90ms ease-out;
+}
+
+.task-bulk-delete-button:hover {
+  transform: translateY(-1px);
+  background: rgba(185, 28, 28, 0.85);
+  border-color: rgba(248, 113, 113, 0.9);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(15, 23, 42, 1);
+}
+
 .task-add-button {
   width: 36px;
   height: 36px;

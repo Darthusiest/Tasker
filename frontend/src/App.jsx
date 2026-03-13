@@ -314,6 +314,8 @@ export default function App() {
   const [editEnd, setEditEnd] = useState('');
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [celebratingTaskId, setCelebratingTaskId] = useState(null);
+  const [selectedTaskIdsBulk, setSelectedTaskIdsBulk] = useState([]);
+  const [bulkDeleteIds, setBulkDeleteIds] = useState([]);
   const isMobile = useIsMobile(640);
 
   const handleStartTransition = () => {
@@ -531,6 +533,39 @@ export default function App() {
     })();
   };
 
+  const handleBulkDeleteConfirm = () => {
+    const ids = bulkDeleteIds;
+    if (!ids || ids.length === 0) return;
+    setBulkDeleteIds([]);
+
+    if (!isLoggedIn) {
+      setTasks(prev => prev.filter(task => !ids.includes(task.id)));
+      setSelectedTaskIdsBulk([]);
+      return;
+    }
+
+    (async () => {
+      try {
+        await Promise.all(
+          ids.map(id =>
+            fetchWithTimeout(
+              `${API_BASE}/tasks/${id}`,
+              { method: 'DELETE', credentials: 'include' },
+              65000
+            )
+          )
+        );
+        setTasks(prev => prev.filter(task => !ids.includes(task.id)));
+        setSelectedTaskIdsBulk([]);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error bulk deleting tasks', err);
+        // eslint-disable-next-line no-alert
+        alert('Failed to delete some tasks. Please try again.');
+      }
+    })();
+  };
+
   const filteredTasks = tasks.filter(t => t.task.toLowerCase().includes(searchQuery.toLowerCase()));
 
   useEffect(() => {
@@ -680,6 +715,15 @@ export default function App() {
               >
                 +
               </button>
+              {selectedTaskIdsBulk.length > 0 && (
+                <button
+                  type="button"
+                  className="task-bulk-delete-button"
+                  onClick={() => setBulkDeleteIds(selectedTaskIdsBulk)}
+                >
+                  Delete selected ({selectedTaskIdsBulk.length})
+                </button>
+              )}
             </div>
             <AnimatedList
               items={filteredTasks}
@@ -752,6 +796,14 @@ export default function App() {
                 setTaskToDelete(item);
               }}
               celebratingTaskId={celebratingTaskId}
+              enableMultiSelect
+              selectedIds={selectedTaskIdsBulk}
+              onToggleSelect={(item) => {
+                if (!item || item.id == null) return;
+                setSelectedTaskIdsBulk(prev =>
+                  prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]
+                );
+              }}
               showGradients={false}
               enableArrowNavigation
               displayScrollbar
@@ -885,6 +937,31 @@ export default function App() {
                       </button>
                     </div>
                   </form>
+                </div>
+              </div>
+            )}
+            {bulkDeleteIds.length > 0 && (
+              <div className="delete-modal-backdrop">
+                <div className="delete-modal" onClick={e => e.stopPropagation()}>
+                  <p className="delete-modal-message">
+                    Do you want to delete <strong>{bulkDeleteIds.length}</strong> selected tasks?
+                  </p>
+                  <div className="delete-modal-actions">
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => setBulkDeleteIds([])}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-danger"
+                      onClick={handleBulkDeleteConfirm}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

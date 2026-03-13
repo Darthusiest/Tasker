@@ -34,7 +34,10 @@ const AnimatedList = ({
   displayScrollbar = true,
   initialSelectedIndex = -1,
   selectedTaskId = null,
-  celebratingTaskId = null
+  celebratingTaskId = null,
+  enableMultiSelect = false,
+  selectedIds = [],
+  onToggleSelect
 }) => {
   const listRef = useRef(null);
   const [selectedIndex, setSelectedIndex] = useState(initialSelectedIndex);
@@ -84,7 +87,7 @@ const AnimatedList = ({
     [isTaskObject]
   );
   const getItemTitle = useCallback(
-    (item) => (isTaskObject && item && typeof item.task === 'string' ? item.task : String(item)),
+    item => (isTaskObject && item && typeof item.task === 'string' ? item.task : String(item)),
     [isTaskObject]
   );
   const isExpanded = useCallback(
@@ -159,6 +162,10 @@ const AnimatedList = ({
           const itemId = isTaskObject && item && item.id != null ? item.id : null;
           const isCelebrating = celebratingTaskId != null && itemId === celebratingTaskId;
           const isCompleted = isTaskObject && item && item.completed;
+          const isBulkSelected =
+            enableMultiSelect && itemId != null && Array.isArray(selectedIds)
+              ? selectedIds.includes(itemId)
+              : false;
           return (
             <AnimatedItem
               key={isTaskObject && item && item.id != null ? item.id : index}
@@ -168,11 +175,30 @@ const AnimatedList = ({
               onClick={() => handleItemClick(item, index)}
             >
               <div
-                className={`item ${selectedIndex === index ? 'selected' : ''} ${expanded ? 'item-expanded' : ''} ${isCelebrating ? 'item-celebrate' : ''} ${itemClassName}`}
+                className={`item ${selectedIndex === index ? 'selected' : ''} ${expanded ? 'item-expanded' : ''} ${isCelebrating ? 'item-celebrate' : ''} ${isBulkSelected ? 'item-bulk-selected' : ''} ${itemClassName}`}
                 onPointerMove={handleItemPointerMove}
                 onPointerLeave={handleItemPointerLeave}
               >
                 <div className="item-row">
+                  {enableMultiSelect && isTaskObject && itemId != null && (
+                    <label
+                      className="item-select"
+                      onClick={e => {
+                        // keep row click from toggling on multi-select tap
+                        e.stopPropagation();
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isBulkSelected}
+                        onChange={() => {
+                          if (onToggleSelect) {
+                            onToggleSelect(item, index);
+                          }
+                        }}
+                      />
+                    </label>
+                  )}
                   <span className={`item-arrow ${expanded ? 'expanded' : ''}`} aria-hidden>
                     {expanded ? '▼' : '▶'}
                   </span>
